@@ -8,10 +8,6 @@ or (if you don't have composer installed)
 ```
 docker-compose run composer install --ignore-platform-reqs 
 ```
-2. Copy .env.example to .env
-```
-cp .env.example .env
-```
 # Run application
 ```
 docker-compose run application bash
