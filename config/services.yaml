@@ -41,14 +41,14 @@ services:
     app.NameGeneratorCsv:
         class: App\Generator\BasicFileNameGenerator
         arguments:
-            $directoryPath: ""
+            $directoryPath: "./var/log"
             $baseName: "crawled-urls"
             $fileExtension: "csv"
 
     app.NameGeneratorLog:
         class: App\Generator\BasicFileNameGenerator
         arguments:
-            $directoryPath: ""
+            $directoryPath: "./var/log"
             $baseName: "crawled-urls"
             $fileExtension: "log"
 

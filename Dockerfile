@@ -14,7 +14,7 @@ COPY . $DEFAULT_APP_DIR
 
 RUN chgrp -R www-data $DEFAULT_APP_DIR
 RUN chmod -R 775 $DEFAULT_APP_DIR/public
-RUN chmod 775 $DEFAULT_APP_DIR/composer.json
+RUN chmod -R 775 $DEFAULT_APP_DIR/var/log
 
 RUN if [ "$BUILD_ENV" = "local" ] ; \
 then \
@@ -26,8 +26,6 @@ then \
     xdebug.max_nesting_level=512' \
     >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini ; \
 fi
-
-#USER 33
 
 WORKDIR $DEFAULT_APP_DIR
 STOPSIGNAL SIGTERM
