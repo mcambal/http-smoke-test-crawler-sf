@@ -67,6 +67,8 @@ class HttpSmokeTestCrawlerCommand extends Command
             $emailList = $this->createTrimmedArray($input->getOption('emails'));
             $this->sendEmailReport($baseUrl, $emailList, $filters, $crawlConfiguration);
         }
+
+        return Command::SUCCESS;
     }
 
     /**
