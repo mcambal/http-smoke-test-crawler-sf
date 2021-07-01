@@ -17,19 +17,19 @@ services:
         class: App\Output\Filter\StatusCodeFilter
         arguments:
             $expectedStatusCodes: [301,302,307,308]
-            $supportedProcessors: []
+            $supportedProcessors: ['App\Output\Processor\LogFileProcessor', 'App\Output\Processor\StdoutProcessor']
 
     app.40xStatusCodes:
         class: App\Output\Filter\StatusCodeFilter
         arguments:
             $expectedStatusCodes: [403,404,405]
-            $supportedProcessors: []
+            $supportedProcessors: ['App\Output\Processor\LogFileProcessor', 'App\Output\Processor\StdoutProcessor']
 
     app.50xStatusCodes:
         class: App\Output\Filter\StatusCodeFilter
         arguments:
             $expectedStatusCodes: [500,501,502,503,504]
-            $supportedProcessors: []
+            $supportedProcessors: ['App\Output\Processor\LogFileProcessor', 'App\Output\Processor\StdoutProcessor']
 
     App\Collection\OutputFilterCollection:
         calls:
