@@ -97,6 +97,12 @@ services:
         calls:
             - addCrawlObserver: ['@App\Spatie\Observer\RecordWriterObserver']
 
+    Swift_Mailer:
+        alias: app.swift.mailer
+
+    Swift_Transport:
+        alias: app.swift.transport
+
     app.swift.mailer:
         class: Swift_Mailer
 
