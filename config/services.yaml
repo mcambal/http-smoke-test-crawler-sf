@@ -4,12 +4,114 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
-
+    smtp.host: "your-host"
+    smtp.port: "your-port"
+    smtp.encryption: "your-encryption"
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    app.30xStatusCodes:
+        class: App\Output\Filter\StatusCodeFilter
+        arguments:
+            $expectedStatusCodes: [301,302,307,308]
+            $supportedProcessors: ['App\Output\Processor\LogFileProcessor', 'App\Output\Processor\StdoutProcessor']
+
+    app.40xStatusCodes:
+        class: App\Output\Filter\StatusCodeFilter
+        arguments:
+            $expectedStatusCodes: [403,404,405]
+            $supportedProcessors: ['App\Output\Processor\LogFileProcessor', 'App\Output\Processor\StdoutProcessor']
+
+    app.50xStatusCodes:
+        class: App\Output\Filter\StatusCodeFilter
+        arguments:
+            $expectedStatusCodes: [500,501,502,503,504]
+            $supportedProcessors: ['App\Output\Processor\LogFileProcessor', 'App\Output\Processor\StdoutProcessor']
+
+    App\Collection\OutputFilterCollection:
+        calls:
+            - add: [ '30x', '@app.30xStatusCodes' ]
+            - add: [ '40x', '@app.40xStatusCodes' ]
+            - add: [ '50x', '@app.50xStatusCodes' ]
+        shared: true
+
+    app.NameGeneratorCsv:
+        class: App\Generator\BasicFileNameGenerator
+        arguments:
+            $directoryPath: "./var/log"
+            $baseName: "crawled-urls"
+            $fileExtension: "csv"
+
+    app.NameGeneratorLog:
+        class: App\Generator\BasicFileNameGenerator
+        arguments:
+            $directoryPath: "./var/log"
+            $baseName: "crawled-urls"
+            $fileExtension: "log"
+
+    App\Output\Formatter\OutputFormatter: '@App\Output\Formatter\LogFormatter'
+
+    app.ProcessorLogFile:
+        class: App\Output\Processor\LogFileProcessor
+        arguments:
+            $nameGenerator: "@app.NameGeneratorLog"
+            $outputFormatter: '@App\Output\Formatter\LogFormatter'
+
+    app.ProcessorCsv:
+        class: App\Output\Processor\LogFileProcessor
+        arguments:
+            $nameGenerator: "@app.NameGeneratorCsv"
+            $outputFormatter: '@App\Output\Formatter\CsvFormatter'
+
+    App\Collection\OutputProcessorCollection:
+        alias: app.OutputProcessorCollection
+        public: false
+
+    app.OutputProcessorCollection:
+        class: App\Collection\OutputProcessorCollection
+        calls:
+            - add: ['stdout', '@App\Output\Processor\StdoutProcessor']
+            - add: ['dot', '@App\Output\Processor\DotProcessor']
+            - add: ['log', "@app.ProcessorLogFile"]
+            - add: ['csv', "@app.ProcessorCsv"]
+
+    app.crawler.adapter:
+        class: App\Spatie\Adapter\SpatieCrawlerAdapter
+        arguments:
+            $crawler: "@app.crawler"
+
+    Spatie\Crawler\Crawler:
+        alias: app.crawler
+        public: false
+
+    app.guzzle:
+        class: GuzzleHttp\Client
+
+    app.crawler:
+        class: Spatie\Crawler\Crawler
+        arguments:
+            $client: '@app.guzzle'
+        calls:
+            - addCrawlObserver: ['@App\Spatie\Observer\RecordWriterObserver']
+
+    Swift_Mailer:
+        alias: app.swift.mailer
+
+    Swift_Transport:
+        alias: app.swift.transport
+
+    app.swift.mailer:
+        class: Swift_Mailer
+
+    app.swift.transport:
+        class: Swift_SmtpTransport
+        arguments:
+            $host: "%smtp.host%"
+            $port: "%smtp.port%"
+            $encryption: "%smtp.encryption%"
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
@@ -20,6 +122,7 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
             - '../src/Tests/'
+            - '../src/Collection/'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

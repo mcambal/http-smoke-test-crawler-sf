@@ -24,7 +24,7 @@
         "symfony/monolog-bundle": "^3.1",
         "symfony/notifier": "*",
         "symfony/orm-pack": "*",
-        "symfony/process": "*",
+        "symfony/process": "~v4.4.26",
         "symfony/runtime": "*",
         "symfony/security-bundle": "*",
         "symfony/serializer-pack": "*",
@@ -33,7 +33,10 @@
         "symfony/twig-pack": "*",
         "symfony/validator": "*",
         "symfony/web-link": "*",
-        "symfony/yaml": "*"
+        "symfony/yaml": "*",
+        "symfony/dom-crawler": "~v4.4",
+        "spatie/crawler": "~v4.7.6",
+        "swiftmailer/swiftmailer": "~v6.2.7"
     },
     "require-dev": {
         "symfony/debug-pack": "*",
