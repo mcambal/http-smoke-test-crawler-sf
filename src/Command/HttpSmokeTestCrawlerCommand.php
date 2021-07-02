@@ -2,6 +2,7 @@
 
 namespace App\Command;
 
+use App\Collection\InputItemCollection;
 use App\Entity\Simple\CrawlerConfiguration;
 use App\Entity\Simple\OutputConfiguration;
 use App\Handler\CrawlHandler;
@@ -57,15 +58,15 @@ class HttpSmokeTestCrawlerCommand extends Command
         );
 
         $outputConfiguration = new OutputConfiguration(
-            $this->createTrimmedArray($input->getOption('output')),
-            $this->createTrimmedArray($filters)
+            new InputItemCollection($input-getOption('output')),
+            new InputItemCollection($filters)
         );
 
         $this->crawlHandler->crawl($baseUrl, $crawlConfiguration, $outputConfiguration);
 
-        if ($input->getOption('emails') !== null) {
-            $emailList = $this->createTrimmedArray($input->getOption('emails'));
-            $this->sendEmailReport($baseUrl, $emailList, $filters, $crawlConfiguration);
+        if ($input-getOption('emails') !== null) {
+            $emailCollection = new InputItemCollection($input-getOption('emails'));
+            $this->sendEmailReport($baseUrl, $emailCollection->all(), $filters, $crawlConfiguration);
         }
 
         return Command::SUCCESS;
@@ -89,7 +90,7 @@ class HttpSmokeTestCrawlerCommand extends Command
                 'maxResponseSize' => $crawlerConfiguration->getMaximumResponseSize() ?? 'no limits'
             ]
         ])->render();
-
+        /** @todo Move static values into configuration file and inject it */
         $this->crawlHandler->sendEmailReport(
             'noreply@webcrawler.eset.com',
             'Http Smoke Test Report (' . $baseUrl . ')',
@@ -144,24 +145,5 @@ class HttpSmokeTestCrawlerCommand extends Command
         }
 
         return $crawlConfiguration;
-    }
-
-    /**
-     * @param string|null $inputData
-     * @return array
-     */
-    private function createTrimmedArray(?string $inputData): array
-    {
-        if ($inputData === null) {
-            return [];
-        }
-
-        $arrayList = explode(',', $inputData);
-
-        array_walk($arrayList, function (&$value) {
-            $value = trim($value);
-        });
-
-        return $arrayList;
     }
 }
