@@ -11,16 +11,20 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Twig\Environment;
 
 class HttpSmokeTestCrawlerCommand extends Command
 {
-    private $crawlHandler;
+    private CrawlHandler $crawlHandler;
+    private Environment $twig;
+
     protected static $defaultName = 'run:smoke-test';
     protected static $defaultDescription = 'Find easily broken links in your website';
 
-    public function __construct(CrawlHandler $crawlHandler, string $name = null)
+    public function __construct(CrawlHandler $crawlHandler, Environment $twig, string $name = null)
     {
         $this->crawlHandler = $crawlHandler;
+        $this->twig = $twig;
 
         parent::__construct($name);
     }
@@ -80,7 +84,9 @@ class HttpSmokeTestCrawlerCommand extends Command
      */
     private function sendEmailReport(string $baseUrl, array $emails, string $filters, CrawlerConfiguration $crawlerConfiguration)
     {
-        $emailBody = $this->templateRenderer->make('Email/CrawlingReport', [
+        /** @todo Create configuration class and inject it */
+        $renderer = $this->twig->load('your.template');
+        $emailBody = $renderer->render([
             'data' => [
                 'baseUrl' => $baseUrl,
                 'userAgent' => $crawlerConfiguration->getUserAgent() ?? 'SmokeTestCrawler/1.0',
@@ -89,10 +95,10 @@ class HttpSmokeTestCrawlerCommand extends Command
                 'maxCrawlDepth' => $crawlerConfiguration->getMaximumCrawlDepth() ?? 'no limits',
                 'maxResponseSize' => $crawlerConfiguration->getMaximumResponseSize() ?? 'no limits'
             ]
-        ])->render();
+        ]);
         /** @todo Move static values into configuration file and inject it */
         $this->crawlHandler->sendEmailReport(
-            'noreply@webcrawler.eset.com',
+            'noreply@your.domain',
             'Http Smoke Test Report (' . $baseUrl . ')',
             $emails,
             $emailBody
